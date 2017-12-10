@@ -35,7 +35,7 @@ namespace Data.Base
 
         public User Select(string id)
         {
-            var result = _collection.Find(x => x.Id == id).First();
+            var result = _collection.Find(x => x.Id == id).FirstOrDefault();
             return result;
         }
 

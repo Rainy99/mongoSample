@@ -16,6 +16,11 @@ namespace Core.Service
             return _dataService.Select();
         }
 
+        public User GetUser(string id)
+        {
+            return _dataService.Select(id);
+        }
+
         public User AddUser(User user)
         {
             return _dataService.Add(user);

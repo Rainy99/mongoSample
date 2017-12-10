@@ -29,6 +29,12 @@ namespace WebApi.Controllers
             return _userService.GetUsers();
         }
 
+        [HttpGet("{id}")]
+        public User User(string id)
+        {
+            return _userService.GetUser(id);
+        }
+
         [HttpPost]
         public User Users([FromBody]User user)
         {

@@ -66,7 +66,7 @@
             </div>
           </div>
     <script>
-        var url = 'http://localhost:62556/User/Users';
+        var url = 'http://localhost:5000/User/Users';
         var initData = async () => {
             let res = await fetch(url, { mode: 'cors' });
             let data = await res.json();
@@ -74,8 +74,9 @@
             let table = document.querySelector('table');
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-                    table.insertAdjacentHTML('beforeend', '<tr class="async-data"><td>' + data[i]["name"] + '</td><td>' + data[i]["gender"] + '</td><td>' + data[i]["city"] + '</td><td>' + data[i]["sign"] + '</td><td><a class="btn btn-info" data-id="'+data[i]["id"]+'" onclick="deleteUser(this)">删除</a></td></tr>')
+                    table.insertAdjacentHTML('beforeend', '<tr class="async-data"><td>' + data[i]["name"] + '</td><td class="gender">' + data[i]["gender"] + '</td><td>' + data[i]["city"] + '</td><td>' + data[i]["sign"] + '</td><td><a class="btn btn-primary" data-id="'+data[i]["id"]+'" onclick="getUserDetail(this)">编辑</a><a class="btn btn-danger" data-id="'+data[i]["id"]+'" onclick="deleteUser(this)">删除</a></td></tr>')
                 }
+                formatGender();
             }
         };
 
@@ -125,7 +126,23 @@
                 console.log(data);
         }
 
+        var getUserDetail = async (obj) => {
+            let id = obj.getAttribute('data-id');
+            let res = await fetch(`http://localhost:5000/User/User/${id}`,{mode:'cors'});
+            let data = await res.json();
+            console.log(data);
+        }
+
+        var formatGender = () => {
+            let elements = document.querySelectorAll('.gender');
+            for(let i = 0;i< elements.length;i++){
+                let e = elements[i];
+                e.innerText = e.innerText === '0'?'女':'男';
+            }
+        }
+
         document.onload = initData();
+        
         
     </script>
 </body>
