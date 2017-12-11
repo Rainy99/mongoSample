@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Core.Interface;
-using Core.Service;
+﻿using Core.Interface;
 using Data.Base.Models;
 using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 
 namespace WebApi.Controllers
 {
@@ -29,8 +24,14 @@ namespace WebApi.Controllers
             return _userService.GetUsers();
         }
 
+        [HttpGet]
+        public IList<User> Search(string name)
+        {
+            return _userService.GetUserByName(name);
+        }
+
         [HttpGet("{id}")]
-        public User User(string id)
+        public User Detail(string id)
         {
             return _userService.GetUser(id);
         }
@@ -45,6 +46,12 @@ namespace WebApi.Controllers
         public Message Users(string id)
         {
             return _userService.DeleteUser(id);
+        }
+
+        [HttpPut]
+        public Message Update([FromBody]User user)
+        {
+            return _userService.UpdatUser(user);
         }
     }
 }

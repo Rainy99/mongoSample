@@ -12,5 +12,7 @@ namespace Core.Interface
         User AddUser(User user);
 
         Message DeleteUser(string id);
+        IList<User> GetUserByName(string name);
+        Message UpdatUser(User user);
     }
 }

@@ -6,19 +6,25 @@
     <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.slim.min.js"></script>
     <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdn.bootcss.com/vue/2.5.9/vue.js"></script>
     <style>
         .content {
             width: 80%;
             margin: 0 auto;
         }
-        
-        .modal-body input,select{
+
+        .modal-body input,
+        select {
             margin-top: 5%;
         }
-        .modal-body :first-child{
+
+        .modal-body :first-child {
             margin-top: 0;
         }
-        
+
+        .option a {
+            margin-left: 5%;
+        }
     </style>
 </head>
 
@@ -26,124 +32,231 @@
     <div class="content">
         <form class="navbar-form navbar-left" role="search">
             <div class="form-group">
-                <input type="text" class="form-control" placeholder="Search">
+                <input type="text" class="form-control" placeholder="请输入用户名" id="keyword">
             </div>
-            <button type="submit" class="btn btn-default">查找</button>
+            <a class="btn btn-default" id="search" onclick="searchUser()">查找</a>
             <a class="btn btn-success" data-toggle="modal" data-target="#modal">添加</a>
         </form>
         <table class="table table-bordered">
-            <tr>
+
+            <tr class="table-head">
                 <th>用户名</th>
                 <th>性别</th>
                 <th>城市</th>
                 <th>签名</th>
                 <th>操作</th>
             </tr>
+
         </table>
     </div>
     <div class="modal fade" tabindex="-1" role="dialog" id="modal">
-            <div class="modal-dialog" role="document">
-              <div class="modal-content">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
                 <div class="modal-header">
-                  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                  <h4 class="modal-title">添加记录</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">添加记录</h4>
                 </div>
                 <div class="modal-body">
-                  <input id="name" class="form-control" placeholder="姓名" />
-                  <input id="city" class="form-control" placeholder="城市" />
-                  <select class="form-control" id="gender">
-                      <option>请选择性别</option>
-                      <option value="0">女</option>
-                      <option value="1">男</option>
-                  </select>
-                  <input id="sign" class="form-control" placeholder="签名" />
+                    <input id="name" class="form-control" placeholder="姓名" />
+                    <input id="city" class="form-control" placeholder="城市" />
+                    <select class="form-control" id="gender">
+                        <option>请选择性别</option>
+                        <option value="0">女</option>
+                        <option value="1">男</option>
+                    </select>
+                    <span id="errorMsg" style="display:none;color:red"></span>
+                    <input id="sign" class="form-control" placeholder="签名" />
                 </div>
                 <div class="modal-footer">
-                  <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                  <button type="button" class="btn btn-primary" id="add" onclick="addUser()">提交</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="add" onclick="addUser()">提交</button>
                 </div>
-              </div>
             </div>
-          </div>
+        </div>
+    </div>
+
+    <div class="modal fade" tabindex="-1" role="dialog" id="modal-update">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">修改记录</h4>
+                </div>
+                <div class="modal-body">
+                    <input class="form-control name" placeholder="姓名" v-model="name" />
+                    <input class="form-control city" placeholder="城市" v-model="city" />
+                    <select class="form-control" v-model="gender">
+                        <option>请选择性别</option>
+                        <option value="0">女</option>
+                        <option value="1">男</option>
+                    </select>
+                    <span id="errorMsg01" style="display:none;color:red"></span>
+                    <input class="form-control sign" placeholder="签名" v-model="sign" />
+                    <input type="hidden" v-model="id" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" v-on:click="update">提交</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         var url = 'http://localhost:5000/User/Users';
         var initData = async () => {
             let res = await fetch(url, { mode: 'cors' });
             let data = await res.json();
-            console.log(data);
             let table = document.querySelector('table');
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-                    table.insertAdjacentHTML('beforeend', '<tr class="async-data"><td>' + data[i]["name"] + '</td><td class="gender">' + data[i]["gender"] + '</td><td>' + data[i]["city"] + '</td><td>' + data[i]["sign"] + '</td><td><a class="btn btn-primary" data-id="'+data[i]["id"]+'" onclick="getUserDetail(this)">编辑</a><a class="btn btn-danger" data-id="'+data[i]["id"]+'" onclick="deleteUser(this)">删除</a></td></tr>')
+                    table.insertAdjacentHTML('beforeend', '<tbody class="data-body"><tr class="async-data"><td>' + data[i]["name"] + '</td><td class="gender">' + data[i]["gender"] + '</td><td>' + data[i]["city"] + '</td><td>' + data[i]["sign"] + '</td><td class="option"><a class="btn btn-primary" data-id="' + data[i]["id"] + '"  onclick="updateUser(this)">编辑</a><a class="btn btn-danger" data-id="' + data[i]["id"] + '" onclick="deleteUser(this)">删除</a></td></tr></tbody>')
                 }
                 formatGender();
             }
         };
+
+        var reloadData = (data) => {
+            if (data.length > 0) {
+                let oldData = document.querySelectorAll('.data-body');
+                let tableHead = document.querySelector('.table-head');
+                for (let i = 0; i < oldData.length; i++) {
+                    oldData[i].innerHTML = '';
+                }
+                for (let i = 0; i < data.length; i++) {
+                    tableHead.parentNode.insertAdjacentHTML('beforeend', '<tbody><tr class="async-data"><td>' + data[i]["name"] + '</td><td class="gender">' + data[i]["gender"] + '</td><td>' + data[i]["city"] + '</td><td>' + data[i]["sign"] + '</td><td class="option"><a class="btn btn-primary" data-id="' + data[i]["id"] + '"  onclick="updateUser(this)">编辑</a><a class="btn btn-danger" data-id="' + data[i]["id"] + '" onclick="deleteUser(this)">删除</a></td></tr></tbody>');
+                }
+                formatGender();
+            }
+        }
 
         var addUser = async () => {
             let name = document.querySelector('#name').value;
             let gender = document.querySelector('#gender').value;
             let city = document.querySelector('#city').value;
             let sign = document.querySelector('#sign').value;
-            
+
             let user = {
-                Id:null,
-                Name:name,
-                Gender:gender,
-                City:city,
-                Sign:sign
+                Id: null,
+                Name: name,
+                Gender: gender,
+                City: city,
+                Sign: sign
             };
 
-            console.log(user);
-            
+            if (user.Gender === '请选择性别') {
+                let error = document.querySelector('#errorMsg');
+                error.style.display = 'block';
+                error.innerText = '请选择性别';
+                return false;
+            }
 
-            if(typeof(user.Name) != 'undefined' || user.Name != '' ){
+            if (typeof (user.Name) != 'undefined' && user.Name != '') {
                 let options = {
-                    mode:'cors',
-                    method:'POST',
-                    headers:{'Content-Type':'application/json'},
-                    body:JSON.stringify(user)
+                    mode: 'cors',
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(user)
                 };
-                let res =  await fetch(url,options);
+                let res = await fetch(url, options);
                 let data = await res.json();
-                console.log(data);
-                if(data.id != null || data.id != ''){
+                if (data.id != null || data.id != '') {
                     $('#modal').modal('hide');
                     location.reload();
                 }
             }
-                    
+
         };
 
         var deleteUser = async (obj) => {
             let id = obj.getAttribute('data-id');
             let options = {
-                    mode:'cors',
-                    method:'DELETE',
-                };
-                let res =  await fetch(url+'?id='+id,options);
-                let data = await res.json();
-                console.log(data);
+                mode: 'cors',
+                method: 'DELETE',
+            };
+            let res = await fetch(url + '?id=' + id, options);
+            let data = await res.json();
+            location.reload();
         }
 
         var getUserDetail = async (obj) => {
             let id = obj.getAttribute('data-id');
-            let res = await fetch(`http://localhost:5000/User/User/${id}`,{mode:'cors'});
+            let res = await fetch(`http://localhost:5000/User/Detail/${id}`, { mode: 'cors' });
             let data = await res.json();
-            console.log(data);
+            return data;
+        }
+
+        var initFormData = (data) => {
+            var app = new Vue({
+                el: '#modal-update',
+                data: {
+                    id: data.id,
+                    name: data.name,
+                    city: data.city,
+                    gender: data.gender,
+                    sign: data.sign
+                },
+                methods: {
+                    update: async function () {
+                        let user = {
+                            Id: this.id,
+                            Name: this.name,
+                            City: this.city,
+                            Gender: this.gender,
+                            Sign: this.sign
+                        };
+                        if (user.Gender === '请选择性别') {
+                            let error = document.querySelector('#errorMsg01');
+                            error.style.display = 'block';
+                            error.innerText = '请选择性别';
+                            return false;
+                        }
+                        let options = {
+                            mode: 'cors',
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(user)
+                        };
+                        let res = await fetch('http://localhost:5000/User/Update', options);
+                        let data = await res.json();
+                        if (data.code === 0) {
+                            $('#modal-update').modal('hide');
+                            location.reload();
+                        }
+                    }
+                }
+            });
+        }
+
+        var updateUser = async (obj) => {
+            let data = await getUserDetail(obj);
+            initFormData(data);
+            $('#modal-update').modal('show');
         }
 
         var formatGender = () => {
             let elements = document.querySelectorAll('.gender');
-            for(let i = 0;i< elements.length;i++){
+            for (let i = 0; i < elements.length; i++) {
                 let e = elements[i];
-                e.innerText = e.innerText === '0'?'女':'男';
+                e.innerText = e.innerText === '0' ? '女' : '男';
             }
         }
 
+        var searchUser = async () => {
+            let name = document.querySelector('#keyword').value;
+            if (typeof (name) !== 'undefined' && name !== "") {
+                let res = await fetch(`http://localhost:5000/User/Search?name=${name}`, { mode: 'cors' });
+                let data = await res.json();
+                reloadData(data);
+            }
+
+        }
+
         document.onload = initData();
-        
-        
+
     </script>
 </body>
-
